@@ -9,8 +9,12 @@ public class Gamescript : MonoBehaviour {
     public GameObject currentblock;
     public float torque;
     public float force;
-    public GameObject camera;
+    public GameObject Playercamera;
     public GameObject player;
+
+    public float spawnTime;
+    float spawntimer;
+    bool spawn = true;
 
     public Text gameOverText;
 
@@ -19,8 +23,10 @@ public class Gamescript : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        currentblock.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
-        frustumPlanes = GeometryUtility.CalculateFrustumPlanes(camera.GetComponent<Camera>());
+        frustumPlanes = GeometryUtility.CalculateFrustumPlanes(Playercamera.GetComponent<Camera>());
+        maxCameraHeight = Playercamera.transform.position.y;
+        //Physics.gravity = new Vector3(0, -0.6f, 0);
+        spawntimer = 0;
     }
 	
 	// Update is called once per frame
@@ -45,24 +51,34 @@ public class Gamescript : MonoBehaviour {
 
     void Update()
     {
+        spawntimer -= Time.deltaTime;
+        if(spawntimer <=0 && spawn)
+        {
+            currentblock =  spawnBlock(blocks[Random.Range(0,7)], new Vector3(0,maxCameraHeight + 7, 0), Quaternion.identity);
+            spawntimer = spawnTime;
+        }
+
+
         if (player.transform.position.y + 4 > maxCameraHeight)
         {
             maxCameraHeight = player.transform.position.y + 4;
-            frustumPlanes = GeometryUtility.CalculateFrustumPlanes(camera.GetComponent<Camera>());
+            frustumPlanes = GeometryUtility.CalculateFrustumPlanes(Playercamera.GetComponent<Camera>());
         }
-        camera.transform.position = new Vector3(0, maxCameraHeight,-10);
+        Playercamera.transform.position = new Vector3(Playercamera.transform.position.x, maxCameraHeight, Playercamera.transform.position.z);
         if (!GeometryUtility.TestPlanesAABB(frustumPlanes, player.GetComponent<Collider>().bounds))
             gameOver();
     }
 
-    public void spawnBlock(GameObject block, Vector3 transform,Quaternion quaternion)
+    public GameObject spawnBlock(GameObject block, Vector3 transform,Quaternion quaternion)
     {
         block = Instantiate(block,transform,quaternion);
         block.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
+        return block;
     }
 
     void gameOver()
     {
+        spawn = false;
         gameOverText.text = "YOU LOOSE";
     }
 }

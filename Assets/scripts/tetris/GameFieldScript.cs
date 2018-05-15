@@ -37,13 +37,18 @@ public class GameFieldScript : MonoBehaviour {
     public Material matWall;
     public GameObject statusHeight;
 
+    public GameObject player;
+
     private Tetrimino currentTetrimino;
     private List<List<Block>> field;
 
     private GameObject wallLeft;
     private GameObject wallRight;
 
+    private Plane[] frustumPlanes;
+
     void Start () {
+
         field = new List<List<Block>>();
 
         currentTetrimino = InstantiateTetrimino(new Vector2Int(0, 5), TetriminoType.I(), 0);
@@ -467,6 +472,8 @@ public class GameFieldScript : MonoBehaviour {
             }
 
             wallHeight = topRow;
+
+
         }
 
         if (Input.GetKeyDown(KeyCode.D))
@@ -515,12 +522,18 @@ public class GameFieldScript : MonoBehaviour {
                     currentTetrimino = InstantiateTetrimino(new Vector2Int(0, FindTopRow() + 2), TetriminoType.Random(), 0);
 
                     iTween.MoveTo(Camera.main.gameObject, new Vector3(5, FindTopRow() * spacing + 2, -10), 2);
+                    frustumPlanes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
 
                     PrintField();
                 }
             }
             period = 0;
         }
+        if(!GeometryUtility.TestPlanesAABB(frustumPlanes,player.GetComponent<Collider>().bounds))
+        {
+            // do stuff
+        }
+
         period += UnityEngine.Time.deltaTime;
     }
 }

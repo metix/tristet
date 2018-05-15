@@ -371,6 +371,22 @@ Prefab:
       propertyPath: verticallInput
       value: Vertical
       objectReference: {fileID: 0}
+    - target: {fileID: 11452448, guid: ee2d107a34692a64e95ce85aed5e41f0, type: 2}
+      propertyPath: jumpTimer
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 11452448, guid: ee2d107a34692a64e95ce85aed5e41f0, type: 2}
+      propertyPath: jumpHeight
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 11452448, guid: ee2d107a34692a64e95ce85aed5e41f0, type: 2}
+      propertyPath: jumpForward
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 11452448, guid: ee2d107a34692a64e95ce85aed5e41f0, type: 2}
+      propertyPath: jumpAirControl
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: ee2d107a34692a64e95ce85aed5e41f0, type: 2}
   m_IsPrefabParent: 0
