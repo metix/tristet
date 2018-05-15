@@ -445,12 +445,13 @@ public class GameFieldScript : MonoBehaviour {
 
     private float period = 0.0f;
     private int wallHeight = 0;
+    public int wallHeightOffset = 7;
 
     public void Update()
     {
-        int topRow = FindTopRow() + 10;
+        int topRow = FindTopRow() + wallHeightOffset;
 
-        statusHeight.GetComponent<Text>().text = "Höhe: " + (topRow - 10);
+        statusHeight.GetComponent<Text>().text = "Höhe: " + (topRow - wallHeightOffset);
 
         if (wallHeight < topRow)
         {
