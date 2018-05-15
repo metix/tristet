@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameFieldScript : MonoBehaviour {
 
@@ -34,6 +35,7 @@ public class GameFieldScript : MonoBehaviour {
     public float rotationUpdateSpeed = 1.05f;
     public float moveUpdateSpeed = 1.05f;
     public Material matWall;
+    public GameObject statusHeight;
 
     private Tetrimino currentTetrimino;
     private List<List<Block>> field;
@@ -400,7 +402,6 @@ public class GameFieldScript : MonoBehaviour {
         GameObject newTetrimino = new GameObject();
         newTetrimino.name = "tetrimino_" + type.Name;
 
-
         for (var y = 0; y < array.GetLength(0); y++)
         {
             for (var x = 0; x < array.GetLength(0); x++)
@@ -443,6 +444,8 @@ public class GameFieldScript : MonoBehaviour {
     public void Update()
     {
         int topRow = FindTopRow() + 10;
+
+        statusHeight.GetComponent<Text>().text = "Höhe: " + (topRow - 10);
 
         if (wallHeight < topRow)
         {
@@ -511,7 +514,7 @@ public class GameFieldScript : MonoBehaviour {
 
                     currentTetrimino = InstantiateTetrimino(new Vector2Int(0, FindTopRow() + 2), TetriminoType.Random(), 0);
 
-                    iTween.MoveTo(Camera.main.gameObject, new Vector3(0, FindTopRow() * spacing + 2, -10), 2);
+                    iTween.MoveTo(Camera.main.gameObject, new Vector3(5, FindTopRow() * spacing + 2, -10), 2);
 
                     PrintField();
                 }

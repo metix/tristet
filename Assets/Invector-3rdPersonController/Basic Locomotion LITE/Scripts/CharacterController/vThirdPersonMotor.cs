@@ -339,6 +339,7 @@ namespace Invector.CharacterController
         {
             get
             {
+                return true;
                 Vector3 p1 = transform.position + _capsuleCollider.center + Vector3.up * -_capsuleCollider.height * 0.5F;
                 Vector3 p2 = p1 + Vector3.up * _capsuleCollider.height;
                 return Physics.CapsuleCastAll(p1, p2, _capsuleCollider.radius * 0.5f, transform.forward, 0.6f, groundLayer).Length == 0;
