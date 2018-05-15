@@ -11,7 +11,8 @@ public class BlockScript : MonoBehaviour {
 
     public void UpdatePosition(Vector3 v, float speed)
     {
-        iTween.MoveTo(gameObject, v, speed);
+       iTween.MoveTo(gameObject, v, speed);
+       
     }
 	
 	// Update is called once per frame

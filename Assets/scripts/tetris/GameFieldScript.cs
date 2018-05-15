@@ -33,9 +33,13 @@ public class GameFieldScript : MonoBehaviour {
     public float spacing = 1.05f;
     public float rotationUpdateSpeed = 1.05f;
     public float moveUpdateSpeed = 1.05f;
+    public Material matWall;
 
     private Tetrimino currentTetrimino;
     private List<List<Block>> field;
+
+    private GameObject wallLeft;
+    private GameObject wallRight;
 
     void Start () {
         field = new List<List<Block>>();
@@ -92,6 +96,21 @@ public class GameFieldScript : MonoBehaviour {
         return ret;
     }
 
+    static Block[,] RotateBlocks(Block[,] matrix, int n)
+    {
+        Block[,] ret = new Block[n, n];
+
+        for (int i = 0; i < n; ++i)
+        {
+            for (int j = 0; j < n; ++j)
+            {
+                ret[i, j] = matrix[n - j - 1, i];
+            }
+        }
+
+        return ret;
+    }
+
     static int[,] RotateNTimes(int[,] array, int n)
     {
         for (var i = 0; i < n; i++)
@@ -135,6 +154,23 @@ public class GameFieldScript : MonoBehaviour {
 
     public bool CanRotate(Tetrimino tetrimino)
     {
+        Block[,] rotated = RotateBlocks(tetrimino.Blocks, tetrimino.Blocks.GetLength(0));
+
+        for (var y = 0; y < tetrimino.Blocks.GetLength(0); y++)
+        {
+            for (var x = 0; x < tetrimino.Blocks.GetLength(0); x++)
+            {
+                if (tetrimino.Position.x + x < 0)
+                    return false;
+
+                if (tetrimino.Position.x + x >= width)
+                    return false;
+
+                if (field[tetrimino.Position.y + y][tetrimino.Position.x + x] != null && rotated[y, x] != null)
+                    return false;
+            }
+        }
+
         return true;
     }
 
@@ -193,20 +229,23 @@ public class GameFieldScript : MonoBehaviour {
             {
                 if (tetrimino.Position.x + x + 1 == width)
                 {
-                    if (BlockColumnContainsBlocks(tetrimino.Blocks, 0)) return false;
+                    if (BlockColumnContainsBlocks(tetrimino.Blocks, tetrimino.Blocks.GetLength(0) - 1)) return false;
                     else continue;
                 }
 
                 if (tetrimino.Position.x + x + 1 == width + 1)
                 {
-                    if (BlockColumnContainsBlocks(tetrimino.Blocks, 1)) return false;
+                    if (BlockColumnContainsBlocks(tetrimino.Blocks, tetrimino.Blocks.GetLength(0) - 2)) return false;
                     else continue;
                 }
 
-                if (tetrimino.Position.x + x + 1 == width + 2)
+                if (tetrimino.Position.x + x + 1 >= width + 1)
                 {
                     return false;
                 }
+
+                if (tetrimino.Position.x + x < 0)
+                    continue;
 
                 if (field[tetrimino.Position.y + y][tetrimino.Position.x + x + 1] != null &&
                     tetrimino.Blocks[y, x] != null)
@@ -254,6 +293,10 @@ public class GameFieldScript : MonoBehaviour {
                     return false;
                 }
 
+
+                if (tetrimino.Position.x + x >=  width)
+                    continue;
+
                 if (field[tetrimino.Position.y + y][tetrimino.Position.x + x - 1] != null &&
                     tetrimino.Blocks[y, x] != null)
                 return false;
@@ -276,7 +319,6 @@ public class GameFieldScript : MonoBehaviour {
             }
         }
     }
-
 
     public bool CanMoveDown(Tetrimino tetrimino)
     {
@@ -396,9 +438,34 @@ public class GameFieldScript : MonoBehaviour {
     }
 
     private float period = 0.0f;
+    private int wallHeight = 0;
 
     public void Update()
     {
+        int topRow = FindTopRow() + 10;
+
+        if (wallHeight < topRow)
+        {
+            Debug.Log("add walls");
+            
+           for (var i = 0; i < topRow - wallHeight; i++)
+           {
+                var spawnPos = new Vector3(-1, (topRow - i + 5) * spacing, 0);
+                var destPos = new Vector3(-1, (topRow - i - 2) * spacing, 0);
+                var wallBlock = Instantiate(blockPrefab, spawnPos, Quaternion.identity);
+                wallBlock.GetComponent<Renderer>().material = matWall;
+                wallBlock.GetComponent<BlockScript>().UpdatePosition(destPos, 3f);
+
+                spawnPos = new Vector3(width + 1, (topRow - i + 5) * spacing, 0);
+                destPos = new Vector3(width + 1, (topRow - i - 2) * spacing, 0);
+                wallBlock = Instantiate(blockPrefab, spawnPos, Quaternion.identity);
+                wallBlock.GetComponent<Renderer>().material = matWall;
+                wallBlock.GetComponent<BlockScript>().UpdatePosition(destPos, 3f);
+            }
+
+            wallHeight = topRow;
+        }
+
         if (Input.GetKeyDown(KeyCode.D))
         {
             if (currentTetrimino != null)

@@ -293,6 +293,7 @@ MonoBehaviour:
   spacing: 1.1
   rotationUpdateSpeed: 1.05
   moveUpdateSpeed: 1.05
+  matWall: {fileID: 2100000, guid: c6654479eb374184e97114fceb88c810, type: 2}
 --- !u!4 &809837024
 Transform:
   m_ObjectHideFlags: 0
