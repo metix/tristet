@@ -31,6 +31,8 @@ public class GameFieldScript : MonoBehaviour {
     public float speed = 1;
     public int width = 10;
     public float spacing = 1.05f;
+    public float rotationUpdateSpeed = 1.05f;
+    public float moveUpdateSpeed = 1.05f;
 
     private Tetrimino currentTetrimino;
     private List<List<Block>> field;
@@ -131,6 +133,58 @@ public class GameFieldScript : MonoBehaviour {
         return false;
     }
 
+    public bool CanRotate(Tetrimino tetrimino)
+    {
+        return true;
+    }
+
+    public void PrintBlockArray(Block[,] blocks)
+    {
+        string f = "";
+
+        for (var y = 0; y < blocks.GetLength(0); y++)
+        {
+            for (var x = 0; x < blocks.GetLength(0); x++)
+            {
+                if (blocks[blocks.GetLength(0) - y - 1, x] != null)
+                    f += "1 ";
+                else
+                    f += "0 ";
+            }
+
+            f += "\n";
+        }
+
+        Debug.Log(f);
+    }
+
+    public void Rotate(Tetrimino tetrimino)
+    {
+        int n = tetrimino.Blocks.GetLength(0);
+
+        PrintBlockArray(tetrimino.Blocks);
+
+        Block[,] ret = new Block[n, n];
+
+        for (int i = 0; i < n; ++i)
+        {
+            for (int j = 0; j < n; ++j)
+            {
+                ret[i, j] = tetrimino.Blocks[n - j - 1, i];
+
+                if (tetrimino.Blocks[n - j - 1, i] != null)
+                {
+                    tetrimino.Blocks[n - j - 1, i].Instance.GetComponent<BlockScript>().UpdatePosition(new Vector3((tetrimino.Position.x + j) * spacing, (tetrimino.Position.y + i) * spacing), rotationUpdateSpeed);
+                }
+            }
+        }
+
+        tetrimino.Blocks = ret;
+
+        PrintBlockArray(tetrimino.Blocks);
+
+    }
+
     public bool CanMoveRight(Tetrimino tetrimino)
     {
         for (var y = 0; y < tetrimino.Blocks.GetLength(0); y++)
@@ -144,7 +198,15 @@ public class GameFieldScript : MonoBehaviour {
                 }
 
                 if (tetrimino.Position.x + x + 1 == width + 1)
+                {
+                    if (BlockColumnContainsBlocks(tetrimino.Blocks, 1)) return false;
+                    else continue;
+                }
+
+                if (tetrimino.Position.x + x + 1 == width + 2)
+                {
                     return false;
+                }
 
                 if (field[tetrimino.Position.y + y][tetrimino.Position.x + x + 1] != null &&
                     tetrimino.Blocks[y, x] != null)
@@ -164,7 +226,7 @@ public class GameFieldScript : MonoBehaviour {
             for (var x = 0; x < tetrimino.Blocks.GetLength(0); x++)
             {
                 if (tetrimino.Blocks[y, x] != null)
-                    tetrimino.Blocks[y, x].Instance.GetComponent<BlockScript>().UpdatePosition(new Vector3((tetrimino.Position.x + x) * spacing, (tetrimino.Position.y + y) * spacing));
+                    tetrimino.Blocks[y, x].Instance.GetComponent<BlockScript>().UpdatePosition(new Vector3((tetrimino.Position.x + x) * spacing, (tetrimino.Position.y + y) * spacing), moveUpdateSpeed);
             }
         }
     }
@@ -182,7 +244,15 @@ public class GameFieldScript : MonoBehaviour {
                 }
 
                 if (tetrimino.Position.x + x - 1 == -2)
+                {
+                    if (BlockColumnContainsBlocks(tetrimino.Blocks, 1)) return false;
+                    else continue;
+                }
+
+                if (tetrimino.Position.x + x - 1 <= -3)
+                {
                     return false;
+                }
 
                 if (field[tetrimino.Position.y + y][tetrimino.Position.x + x - 1] != null &&
                     tetrimino.Blocks[y, x] != null)
@@ -202,7 +272,7 @@ public class GameFieldScript : MonoBehaviour {
             for (var x = 0; x < tetrimino.Blocks.GetLength(0); x++)
             {
                 if (tetrimino.Blocks[y, x] != null)
-                    tetrimino.Blocks[y, x].Instance.GetComponent<BlockScript>().UpdatePosition(new Vector3((tetrimino.Position.x + x) * spacing, (tetrimino.Position.y + y) * spacing));
+                    tetrimino.Blocks[y, x].Instance.GetComponent<BlockScript>().UpdatePosition(new Vector3((tetrimino.Position.x + x) * spacing, (tetrimino.Position.y + y) * spacing), moveUpdateSpeed);
             }
         }
     }
@@ -210,11 +280,21 @@ public class GameFieldScript : MonoBehaviour {
 
     public bool CanMoveDown(Tetrimino tetrimino)
     {
-        for (var y = 0; y < tetrimino.Blocks.GetLength(0); y++) { 
+        for (var y = 0; y < tetrimino.Blocks.GetLength(0); y++) {
+
+            if (tetrimino.Position.y + y - 1 <= -3)
+            {
+                return false;
+            }
 
             if (tetrimino.Position.y + y - 1 == -2)
-                return false;
-            
+            {
+                if (BlockRowContainsBlock(tetrimino.Blocks, 1))
+                    return false;
+                else
+                    continue;
+            }
+
             if (tetrimino.Position.y + y - 1 == -1)
             {
                 if (BlockRowContainsBlock(tetrimino.Blocks, 0))
@@ -259,7 +339,7 @@ public class GameFieldScript : MonoBehaviour {
             for (var x = 0; x < tetrimino.Blocks.GetLength(0); x++)
             {
                 if (tetrimino.Blocks[y, x] != null)
-                tetrimino.Blocks[y, x].Instance.GetComponent<BlockScript>().UpdatePosition(new Vector3((tetrimino.Position.x + x) * spacing, (tetrimino.Position.y + y) * spacing));
+                tetrimino.Blocks[y, x].Instance.GetComponent<BlockScript>().UpdatePosition(new Vector3((tetrimino.Position.x + x) * spacing, (tetrimino.Position.y + y) * spacing), moveUpdateSpeed);
             }
         }
     }
@@ -275,6 +355,9 @@ public class GameFieldScript : MonoBehaviour {
         Tetrimino tetrimino = new Tetrimino(rotation, pos, type);
 
         tetrimino.Blocks = new Block[array.GetLength(0), array.GetLength(0)];
+        GameObject newTetrimino = new GameObject();
+        newTetrimino.name = "tetrimino_" + type.Name;
+
 
         for (var y = 0; y < array.GetLength(0); y++)
         {
@@ -287,6 +370,8 @@ public class GameFieldScript : MonoBehaviour {
                     block.Position = new Vector2Int(pos.x + x, pos.y + y);
                     block.Instance = Instantiate(blockPrefab, new Vector3((pos.x + x) * spacing, (pos.y + y) * spacing), Quaternion.identity);
                     block.Instance.GetComponent<Renderer>().material = type.Material;
+
+                    block.Instance.transform.SetParent(newTetrimino.transform);
 
                     tetrimino.Blocks[y, x] = block;
                 }
@@ -322,13 +407,25 @@ public class GameFieldScript : MonoBehaviour {
                     MoveRight(currentTetrimino);
             }
         }
-
         else if (Input.GetKeyDown(KeyCode.A))
         {
             if (currentTetrimino != null)
             {
                 if (CanMoveLeft(currentTetrimino))
                     MoveLeft(currentTetrimino);
+            }
+        } else if (Input.GetKeyDown(KeyCode.Q))
+        {
+            if (CanRotate(currentTetrimino))
+            {
+                Rotate(currentTetrimino);
+            }
+        }
+        else if (Input.GetKeyDown(KeyCode.S))
+        {
+            while (CanMoveDown(currentTetrimino))
+            {
+                MoveDown(currentTetrimino);
             }
         }
 
@@ -337,7 +434,9 @@ public class GameFieldScript : MonoBehaviour {
             if (currentTetrimino != null)
             {
                 if (CanMoveDown(currentTetrimino))
+                {
                     MoveDown(currentTetrimino);
+                }
                 else
                 {
                     InsertTetrimino(currentTetrimino);

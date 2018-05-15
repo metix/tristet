@@ -288,9 +288,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blockPrefab: {fileID: 1852152562333454, guid: 71cdc2d391f67174cbfb27679482634a,
     type: 2}
-  speed: 0.3
+  speed: 1
   width: 10
-  spacing: 1.4
+  spacing: 1.1
+  rotationUpdateSpeed: 1.05
+  moveUpdateSpeed: 1.05
 --- !u!4 &809837024
 Transform:
   m_ObjectHideFlags: 0

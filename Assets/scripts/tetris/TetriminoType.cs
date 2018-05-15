@@ -14,6 +14,7 @@ public class TetriminoType {
 
     public int[,] Array { get; set; }
     public Material Material { get; set; }
+    public string Name { get; set; }
 
     public static TetriminoType I()
     {
@@ -25,7 +26,8 @@ public class TetriminoType {
             { 1, 1, 1, 1 },
             { 0, 0, 0, 0 }
         },
-            Material = mGreen
+            Material = mGreen,
+            Name = "I"
         };
     }
 
@@ -38,7 +40,8 @@ public class TetriminoType {
             { 1, 1, 1 },
             { 0, 0, 1 },
         },
-            Material = mBlue
+            Material = mBlue,
+            Name = "J"
         };
     }
 
@@ -51,7 +54,8 @@ public class TetriminoType {
             { 1, 1, 1 },
             { 1, 0, 0 },
         },
-            Material = mRed
+            Material = mRed,
+            Name = "L"
         };
     }
 
@@ -65,7 +69,8 @@ public class TetriminoType {
             { 0, 1, 1, 0 },
             { 0, 0, 0, 0 }
         },
-            Material = mPurple
+            Material = mPurple,
+            Name = "O"
         };
     }
 
@@ -78,8 +83,9 @@ public class TetriminoType {
             { 0, 1, 0 },
             { 1, 1, 0 },
         },
-        Material = mOrange
-        };
+        Material = mOrange,
+        Name = "S"
+    };
     }
 
     public static TetriminoType T()
@@ -91,7 +97,8 @@ public class TetriminoType {
             { 0, 1, 0 },
             { 1, 1, 1 },
         },
-            Material = mGray
+            Material = mGray,
+            Name = "T"
         };
     }
 
@@ -104,7 +111,8 @@ public class TetriminoType {
             { 0, 1, 0 },
             { 0, 1, 1 },
         },
-            Material = mWhite
+            Material = mWhite,
+            Name = "Z"
         };
     }
 
