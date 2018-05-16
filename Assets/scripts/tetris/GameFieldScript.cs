@@ -15,16 +15,18 @@ public class GameFieldScript : MonoBehaviour {
 
     public class Tetrimino
     {
-        public Tetrimino(int rotation, Vector2Int position, TetriminoType type)
+        public Tetrimino(int rotation, Vector2Int position, TetriminoType type, bool staticTetrimino)
         {
             Rotation = rotation;
             Position = position;
             Type = type;
+            isStatic = staticTetrimino;
         }
 
         public int Rotation { get; set; }
         public Vector2Int Position { get; internal set; }
         public TetriminoType Type { get; set; }
+        public bool isStatic { get; set; }
 
         public Block[,] Blocks { get; set; }
     }
@@ -39,6 +41,7 @@ public class GameFieldScript : MonoBehaviour {
     public GameObject statusHeight;
 
     public GameObject player;
+    public GameObject playerPrefab;
 
     private Tetrimino currentTetrimino;
     private List<List<Block>> field;
@@ -46,16 +49,25 @@ public class GameFieldScript : MonoBehaviour {
     private GameObject wallLeft;
     private GameObject wallRight;
 
+    private int wallHeight = 0;
+
     private Plane[] frustumPlanes;
 
+    private GameObject allObjectsParent;
+
+    private bool gameOver;
+
     void Start () {
+        Init();
+    }
 
+    void Init()
+    {
+        allObjectsParent = new GameObject();
         field = new List<List<Block>>();
-
-        currentTetrimino = InstantiateTetrimino(new Vector2Int(0, 5), TetriminoType.I(), 0);
-
-        PrintField();
-        UpdateCamera();
+        wallHeight = 0;
+        currentTetrimino = InstantiateTetrimino(new Vector2Int(0, 5), TetriminoType.I(), 0, false);
+        UpdateCamera(new Vector3(5, FindTopRow(false) * spacing + 2, -10));
     }
 
     private void PrintField()
@@ -144,7 +156,7 @@ public class GameFieldScript : MonoBehaviour {
         return false;
     }
 
-    private bool FieldRowContainsBlock(List<List<Block>> field, int row)
+    private bool FieldRowContainsBlock(List<List<Block>> field, int row, bool withStatic)
     {
         if (row < 0)
             return false;
@@ -154,11 +166,35 @@ public class GameFieldScript : MonoBehaviour {
 
         for (var i = 0; i < field[row].Count; i++)
         {
+            if (!withStatic && field[row][i] != null && field[row][i].Parent.isStatic)
+                continue;
             if (field[row][i] != null)
                 return true;
         }
 
         return false;
+    }
+
+    public bool CanPlaceOnField(TetriminoType type, Vector2Int position)
+    {
+        for (var y = 0; y < type.Array.GetLength(0); y++)
+        {
+            for (var x = 0; x < type.Array.GetLength(0); x++)
+            {
+                if (position.x + x < 0)
+                    continue;
+
+                if (position.x + x >= width)
+                    continue;
+
+                if (field[position.y + y][position.x + x] != null && type.Array[y, x] != 0)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     public bool CanRotate(Tetrimino tetrimino)
@@ -376,11 +412,11 @@ public class GameFieldScript : MonoBehaviour {
         return true;
     }
 
-    public int FindTopRow()
+    public int FindTopRow(bool withStatic)
     {
         for (var y = field.Count; y >= 0; y--)
         {
-            if (FieldRowContainsBlock(field, y - 1))
+            if (FieldRowContainsBlock(field, y - 1, withStatic))
                 return y;
         }
 
@@ -401,18 +437,19 @@ public class GameFieldScript : MonoBehaviour {
         }
     }
 
-    public Tetrimino InstantiateTetrimino(Vector2Int pos, TetriminoType type, int rotation)
+    public Tetrimino InstantiateTetrimino(Vector2Int pos, TetriminoType type, int rotation, bool staticTetrimino)
     {
         // add empty rows on top of field, to avoid array out of bounds exceptions
-        for (var i = 0; i < (pos.y + 20) - field.Count; i++)
+        for (var i = 0; i < (pos.y + 30) - field.Count; i++)
             field.Add(EmptyRow());
 
         int[,] array = RotateNTimes(type.Array, rotation);
 
-        Tetrimino tetrimino = new Tetrimino(rotation, pos, type);
+        Tetrimino tetrimino = new Tetrimino(rotation, pos, type, staticTetrimino);
 
         tetrimino.Blocks = new Block[array.GetLength(0), array.GetLength(0)];
         GameObject newTetrimino = new GameObject();
+        newTetrimino.transform.SetParent(allObjectsParent.transform);
         newTetrimino.name = "tetrimino_" + type.Name;
 
         for (var y = 0; y < array.GetLength(0); y++)
@@ -439,6 +476,7 @@ public class GameFieldScript : MonoBehaviour {
 
     public void InsertTetrimino(Tetrimino tetrimino)
     {
+       Debug.Log("insert_tetrimino(" + tetrimino.Position.x + ", " + tetrimino.Position.y + ")");
        for (var y = 0; y < tetrimino.Blocks.GetLength(0); y++)
        {
             for (var x = 0; x < tetrimino.Blocks.GetLength(0); x++)
@@ -452,42 +490,58 @@ public class GameFieldScript : MonoBehaviour {
     }
 
     private float period = 0.0f;
-    private int wallHeight = 0;
     public int wallHeightOffset = 7;
 
-    public void UpdateCamera()
+    public void UpdateCamera(Vector3 pos)
     {
-        iTween.MoveTo(Camera.main.gameObject, new Vector3(5, FindTopRow() * spacing + 2, -10), 2);
+        iTween.MoveTo(Camera.main.gameObject, pos, 2);
+    }
+
+    public void SpawnRandomTetrimino()
+    {
+        TetriminoType type = TetriminoType.I();
+        Vector2Int position = new Vector2Int(Random.Range(4, width - type.Array.GetLength(0)), FindTopRow(false) + 10);
+
+        Debug.Log("spawn_random_tetrimino(" + type.Name + ", (" + position.x + ", " + position.y + ")");
+
+        if (!CanPlaceOnField(type, position))
+        {
+            return;
+        }
+
+        var tetrimino = InstantiateTetrimino(position, type , 0, true);
+        InsertTetrimino(tetrimino);
     }
 
     public void Update()
     {
-        int topRow = FindTopRow() + wallHeightOffset;
+        if (gameOver)
+            return;
+
+        int topRow = FindTopRow(false) + wallHeightOffset;
 
         statusHeight.GetComponent<Text>().text = "Höhe: " + (topRow - wallHeightOffset);
 
         if (wallHeight < topRow)
-        {
-            Debug.Log("add walls");
-            
+        {   
            for (var i = 0; i < topRow - wallHeight; i++)
            {
                 var spawnPos = new Vector3(-1, (topRow - i + 5) * spacing, 0);
                 var destPos = new Vector3(-1, (topRow - i - 2) * spacing, 0);
                 var wallBlock = Instantiate(blockPrefab, spawnPos, Quaternion.identity);
+                wallBlock.transform.SetParent(allObjectsParent.transform);
                 wallBlock.GetComponent<Renderer>().material = matWall;
                 wallBlock.GetComponent<BlockScript>().UpdatePosition(destPos, 3f);
 
                 spawnPos = new Vector3(width + 1, (topRow - i + 5) * spacing, 0);
                 destPos = new Vector3(width + 1, (topRow - i - 2) * spacing, 0);
                 wallBlock = Instantiate(blockPrefab, spawnPos, Quaternion.identity);
+                wallBlock.transform.SetParent(allObjectsParent.transform);
                 wallBlock.GetComponent<Renderer>().material = matWall;
                 wallBlock.GetComponent<BlockScript>().UpdatePosition(destPos, 3f);
             }
 
             wallHeight = topRow;
-
-
         }
 
         if (Input.GetKeyDown(KeyCode.D))
@@ -531,24 +585,26 @@ public class GameFieldScript : MonoBehaviour {
                 else
                 {
                     InsertTetrimino(currentTetrimino);
-                    currentTetrimino = null;
+                    UpdateCamera(new Vector3(5, FindTopRow(false) * spacing + 2, -10));
 
-                    currentTetrimino = InstantiateTetrimino(new Vector2Int(0, FindTopRow() + 2), TetriminoType.Random(), 0);
-
-                    UpdateCamera();
-                    frustumPlanes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
-
-                    PrintField();
+                    currentTetrimino = InstantiateTetrimino(new Vector2Int(0, FindTopRow(false) + 4), TetriminoType.Random(), 0, false);
                 }
             }
             period = 0;
         }
-        if(!GeometryUtility.TestPlanesAABB(frustumPlanes,player.GetComponent<Collider>().bounds))
+
+        frustumPlanes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
+        if (!GeometryUtility.TestPlanesAABB(frustumPlanes, player.GetComponent<Collider>().bounds))
         {
-            // do stuff
-            SceneManager.LoadScene("tetris");
+            Debug.Log("restart game");
+            gameOver = true;
+            Destroy(allObjectsParent);
+            Destroy(player);
+            player = Instantiate(playerPrefab, new Vector3(1, 0, 0), Quaternion.identity);
+            Init();
+            gameOver = false;
         }
 
-        period += UnityEngine.Time.deltaTime;
+        period += Time.deltaTime;
     }
 }
