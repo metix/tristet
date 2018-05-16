@@ -31,6 +31,7 @@ public class GameFieldScript : MonoBehaviour {
         public Block[,] Blocks { get; set; }
     }
 
+    public int deathCounter;
     public GameObject blockPrefab;
     public float speed = 1;
     public int width = 10;
@@ -209,6 +210,10 @@ public class GameFieldScript : MonoBehaviour {
                     return false;
 
                 if (tetrimino.Position.x + x >= width)
+                    return false;
+
+
+                if (tetrimino.Position.y + y < 0 && BlockRowContainsBlock(rotated, 0))
                     return false;
 
                 if (field[tetrimino.Position.y + y][tetrimino.Position.x + x] != null && rotated[y, x] != null)
@@ -596,6 +601,7 @@ public class GameFieldScript : MonoBehaviour {
         frustumPlanes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
         if (!GeometryUtility.TestPlanesAABB(frustumPlanes, player.GetComponent<Collider>().bounds))
         {
+            deathCounter++;
             Debug.Log("restart game");
             gameOver = true;
             Destroy(allObjectsParent);
