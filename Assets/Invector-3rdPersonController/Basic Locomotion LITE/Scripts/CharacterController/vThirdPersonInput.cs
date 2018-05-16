@@ -111,7 +111,7 @@ namespace Invector.CharacterController
 
         protected virtual void JumpInput()
         {
-            if (Input.GetKeyDown(jumpInput))
+            if (Input.GetButtonDown("Jump"))
                 cc.Jump();
         }
 

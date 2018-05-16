@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class GameFieldScript : MonoBehaviour {
@@ -54,6 +55,7 @@ public class GameFieldScript : MonoBehaviour {
         currentTetrimino = InstantiateTetrimino(new Vector2Int(0, 5), TetriminoType.I(), 0);
 
         PrintField();
+        UpdateCamera();
     }
 
     private void PrintField()
@@ -254,6 +256,9 @@ public class GameFieldScript : MonoBehaviour {
                 if (tetrimino.Position.x + x < 0)
                     continue;
 
+                if (tetrimino.Position.y + y < 0)
+                    continue;
+
                 if (field[tetrimino.Position.y + y][tetrimino.Position.x + x + 1] != null &&
                     tetrimino.Blocks[y, x] != null)
                     return false;
@@ -302,6 +307,9 @@ public class GameFieldScript : MonoBehaviour {
 
 
                 if (tetrimino.Position.x + x >=  width)
+                    continue;
+
+                if (tetrimino.Position.y + y < 0)
                     continue;
 
                 if (field[tetrimino.Position.y + y][tetrimino.Position.x + x - 1] != null &&
@@ -447,6 +455,11 @@ public class GameFieldScript : MonoBehaviour {
     private int wallHeight = 0;
     public int wallHeightOffset = 7;
 
+    public void UpdateCamera()
+    {
+        iTween.MoveTo(Camera.main.gameObject, new Vector3(5, FindTopRow() * spacing + 2, -10), 2);
+    }
+
     public void Update()
     {
         int topRow = FindTopRow() + wallHeightOffset;
@@ -522,7 +535,7 @@ public class GameFieldScript : MonoBehaviour {
 
                     currentTetrimino = InstantiateTetrimino(new Vector2Int(0, FindTopRow() + 2), TetriminoType.Random(), 0);
 
-                    iTween.MoveTo(Camera.main.gameObject, new Vector3(5, FindTopRow() * spacing + 2, -10), 2);
+                    UpdateCamera();
                     frustumPlanes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
 
                     PrintField();
@@ -533,6 +546,7 @@ public class GameFieldScript : MonoBehaviour {
         if(!GeometryUtility.TestPlanesAABB(frustumPlanes,player.GetComponent<Collider>().bounds))
         {
             // do stuff
+            SceneManager.LoadScene("tetris");
         }
 
         period += UnityEngine.Time.deltaTime;
