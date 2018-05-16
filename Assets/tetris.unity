@@ -865,6 +865,7 @@ MonoBehaviour:
   head: 0
   forward: 0
   backward: 0
+  force: 3000
 --- !u!1 &1398955050
 GameObject:
   m_ObjectHideFlags: 0

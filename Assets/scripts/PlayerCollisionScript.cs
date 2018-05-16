@@ -9,6 +9,10 @@ public class PlayerCollisionScript : MonoBehaviour {
     public bool forward;
     public bool backward;
 
+    public float force;
+
+    private bool push = false;
+
 	// Use this for initialization
 	void Start () {
 		
@@ -18,8 +22,14 @@ public class PlayerCollisionScript : MonoBehaviour {
 	void Update () {
 		if((feet && head) || (forward && backward))
         {
-            Destroy(gameObject);
+            gameObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+            push = true;
             //Game over
         }
-	}
+        if(push)
+        {
+            gameObject.GetComponent<Rigidbody>().AddForce(new Vector3(0, 0, -1) * force);
+
+        }
+    }
 }
