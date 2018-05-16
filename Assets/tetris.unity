@@ -124,7 +124,7 @@ GameObject:
   - component: {fileID: 33091455}
   - component: {fileID: 33091456}
   - component: {fileID: 33091457}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Forward
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -151,7 +151,7 @@ BoxCollider:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 33091454}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 0.6, y: 0.25, z: 0.02}
@@ -181,7 +181,7 @@ GameObject:
   - component: {fileID: 227720738}
   - component: {fileID: 227720739}
   - component: {fileID: 227720740}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: HeadCollider
   m_TagString: Collider/Head
   m_Icon: {fileID: 0}
@@ -211,7 +211,7 @@ BoxCollider:
   m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.25, y: 0.01, z: 0.25}
+  m_Size: {x: 0.2, y: 0.01, z: 0.2}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &227720740
 MonoBehaviour:
@@ -559,7 +559,7 @@ GameObject:
   - component: {fileID: 1086631515}
   - component: {fileID: 1086631516}
   - component: {fileID: 1086631517}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: FeetCollider
   m_TagString: Collider/Feet
   m_Icon: {fileID: 0}
@@ -949,7 +949,7 @@ GameObject:
   - component: {fileID: 1727275742}
   - component: {fileID: 1727275743}
   - component: {fileID: 1727275744}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Backward
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -976,7 +976,7 @@ BoxCollider:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1727275741}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 0.6, y: 0.25, z: 0.01}
