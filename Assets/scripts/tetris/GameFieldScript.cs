@@ -40,12 +40,16 @@ public class GameFieldScript : MonoBehaviour {
     public float moveUpdateSpeed = 1.05f;
     public Material matWall;
     public Material matStaticWall;
-    public GameObject statusHeight;
 
     public GameObject player;
     public GameObject playerPrefab;
 
+    public GameObject ui;
+
     public int staticNumberWallOffset = 10;
+
+    public float score = -5;
+    public float best = 0;
 
     private Tetrimino currentTetrimino;
     private List<List<Block>> field;
@@ -68,7 +72,7 @@ public class GameFieldScript : MonoBehaviour {
 
     public void RestartGame()
     {
-        GameOver();
+        Debug.Log("restart game");
         InitGame();
         Invoke("StartGame", 1);
     }
@@ -90,11 +94,23 @@ public class GameFieldScript : MonoBehaviour {
         allObjectsParent = new GameObject();
         field = new List<List<Block>>();
         wallHeight = 0;
+        score = -5;
+        speed = 1;
         lastInsertedStaticNumberWallHeight = -1;
         InsertWalls();
         InsertStaticNumberWalls();
         currentTetrimino = InstantiateTetrimino(new Vector2Int(0, 5), TetriminoType.I(), 0, false);
         UpdateCamera(new Vector3(5f, FindTopRow(false) * spacing + 2, -10));
+
+        iTween.ValueTo(gameObject, iTween.Hash(
+            "from", GetComponent<AudioLowPassFilter>().cutoffFrequency,
+            "to", 10000,
+            "time", 1f,
+            "onupdatetarget", gameObject,
+            "onupdate", "tweenOnUpdateCallBack",
+            "easetype", iTween.EaseType.easeOutQuad
+            )
+        );
     }
 
     public void StartGame()
@@ -105,10 +121,33 @@ public class GameFieldScript : MonoBehaviour {
             GetComponent<AudioSource>().Play();
     }
 
+    void tweenOnUpdateCallBack(int newValue)
+    {
+        GetComponent<AudioLowPassFilter>().cutoffFrequency = newValue;
+    }
+
     public void GameOver()
     {
         deathCounter++;
         gameStop = true;
+
+        iTween.ValueTo(gameObject, iTween.Hash(
+          "from", GetComponent<AudioLowPassFilter>().cutoffFrequency,
+          "to", 250,
+          "time", 1f,
+          "onupdatetarget", gameObject,
+          "onupdate", "tweenOnUpdateCallBack",
+          "easetype", iTween.EaseType.easeOutQuad
+          )
+      );
+
+        if (score > best)
+        {
+            best = score;
+        }
+
+        if (score < 0)
+            score = 0;
     }
 
     private void PrintField()
@@ -158,7 +197,7 @@ public class GameFieldScript : MonoBehaviour {
         return ret;
     }
 
-    static Block[,] RotateBlocks(Block[,] matrix, int n)
+    static Block[,] RotateBlocksLeft(Block[,] matrix, int n)
     {
         Block[,] ret = new Block[n, n];
 
@@ -167,6 +206,21 @@ public class GameFieldScript : MonoBehaviour {
             for (int j = 0; j < n; ++j)
             {
                 ret[i, j] = matrix[n - j - 1, i];
+            }
+        }
+
+        return ret;
+    }
+
+    static Block[,] RotateBlocksRight(Block[,] matrix, int n)
+    {
+        Block[,] ret = new Block[n, n];
+
+        for (int i = 0; i < n; ++i)
+        {
+            for (int j = 0; j < n; ++j)
+            {
+                ret[i, j] = matrix[j, n - i - 1];
             }
         }
 
@@ -238,9 +292,35 @@ public class GameFieldScript : MonoBehaviour {
         return true;
     }
 
-    public bool CanRotate(Tetrimino tetrimino)
+    public bool CanRotateLeft(Tetrimino tetrimino)
     {
-        Block[,] rotated = RotateBlocks(tetrimino.Blocks, tetrimino.Blocks.GetLength(0));
+        Block[,] rotated = RotateBlocksLeft(tetrimino.Blocks, tetrimino.Blocks.GetLength(0));
+
+        for (var y = 0; y < tetrimino.Blocks.GetLength(0); y++)
+        {
+            for (var x = 0; x < tetrimino.Blocks.GetLength(0); x++)
+            {
+                if (tetrimino.Position.x + x < 0)
+                    return false;
+
+                if (tetrimino.Position.x + x >= width)
+                    return false;
+
+
+                if (tetrimino.Position.y + y < 0 && BlockRowContainsBlock(rotated, 0))
+                    return false;
+
+                if (field[tetrimino.Position.y + y][tetrimino.Position.x + x] != null && rotated[y, x] != null)
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    public bool CanRotateRight(Tetrimino tetrimino)
+    {
+        Block[,] rotated = RotateBlocksRight(tetrimino.Blocks, tetrimino.Blocks.GetLength(0));
 
         for (var y = 0; y < tetrimino.Blocks.GetLength(0); y++)
         {
@@ -284,7 +364,7 @@ public class GameFieldScript : MonoBehaviour {
         Debug.Log(f);
     }
 
-    public void Rotate(Tetrimino tetrimino)
+    public void RotateLeft(Tetrimino tetrimino)
     {
         int n = tetrimino.Blocks.GetLength(0);
 
@@ -307,7 +387,30 @@ public class GameFieldScript : MonoBehaviour {
 
         tetrimino.Blocks = ret;
 
+    }
+
+    public void RotateRight(Tetrimino tetrimino)
+    {
+        int n = tetrimino.Blocks.GetLength(0);
+
         PrintBlockArray(tetrimino.Blocks);
+
+        Block[,] ret = new Block[n, n];
+
+        for (int i = 0; i < n; ++i)
+        {
+            for (int j = 0; j < n; ++j)
+            {
+                ret[i, j] = tetrimino.Blocks[j, n - i - 1];
+
+                if (tetrimino.Blocks[j, n - i - 1] != null)
+                {
+                    tetrimino.Blocks[j, n - i - 1].Instance.GetComponent<BlockScript>().UpdatePosition(new Vector3((tetrimino.Position.x + j) * spacing, (tetrimino.Position.y + i) * spacing), rotationUpdateSpeed);
+                }
+            }
+        }
+
+        tetrimino.Blocks = ret;
 
     }
 
@@ -621,6 +724,14 @@ public class GameFieldScript : MonoBehaviour {
         if (gameStop)
             return;
 
+        float newScore = Mathf.Round(player.transform.position.y * 100) / 100;
+        if (newScore > score)
+        {
+            score = newScore;
+            if (score > 0)
+                speed = Mathf.Pow(score, -0.4f);
+        }
+
         InsertStaticNumberWalls();
         InsertWalls();
 
@@ -641,9 +752,16 @@ public class GameFieldScript : MonoBehaviour {
             }
         } else if (Input.GetKeyDown(KeyCode.Q))
         {
-            if (CanRotate(currentTetrimino))
+            if (CanRotateLeft(currentTetrimino))
             {
-                Rotate(currentTetrimino);
+                RotateLeft(currentTetrimino);
+            }
+        }
+        else if (Input.GetKeyDown(KeyCode.E))
+        {
+            if (CanRotateRight(currentTetrimino))
+            {
+                RotateRight(currentTetrimino);
             }
         }
         else if (Input.GetKeyDown(KeyCode.S))
@@ -676,7 +794,8 @@ public class GameFieldScript : MonoBehaviour {
         frustumPlanes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
         if (!GeometryUtility.TestPlanesAABB(frustumPlanes, player.GetComponent<Collider>().bounds))
         {
-            RestartGame();
+            GameOver();
+            ui.GetComponent<UIScript>().Show(score, best);
         }
 
         period += Time.deltaTime;

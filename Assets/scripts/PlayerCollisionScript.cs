@@ -21,8 +21,13 @@ public class PlayerCollisionScript : MonoBehaviour {
     // Update is called once per frame
     private bool pushCalled = false;
 
+    bool wasSlaped;
+    bool wasSquashed;
+
 	void Update () {
-		if((feet && head) || (forward && backward))
+   
+
+        if ((feet && head) || (forward && backward))
         {
             gameObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
             push = true;
@@ -30,14 +35,32 @@ public class PlayerCollisionScript : MonoBehaviour {
         }
         if(push)
         {
-            gameObject.GetComponent<Rigidbody>().AddForce(new Vector3(0, 0, -1) * force);
+            if (wasSlaped)
+            {
+                gameObject.GetComponent<Rigidbody>().AddForce(new Vector3(0, 0, -1) * force * 3);
+
+            }
+
+            if (wasSquashed)
+            {
+                gameObject.GetComponent<Rigidbody>().AddForce(new Vector3(0, 0, -1) * force * 3);
+            }
 
             if (!pushCalled)
             {
-                Debug.Log("play audio");
-                if (feet & head)
+                wasSlaped = feet && head;
+                wasSquashed = forward && backward;
+
+                Debug.Log("player died");
+                if (feet && head)
                 {
+                    Debug.Log("you are slaped by a long block");
                     gameObject.GetComponent<AudioSource>().Play();
+                }
+
+                if (forward && backward)
+                {
+                    Debug.Log("you are squashed");
                 }
                 pushCalled = true;
             }

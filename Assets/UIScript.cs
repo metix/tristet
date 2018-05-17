@@ -15,6 +15,7 @@ public class UIScript : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+        GetComponent<Canvas>().enabled = false;
     }
 	
 	// Update is called once per frame
@@ -22,12 +23,22 @@ public class UIScript : MonoBehaviour {
 		
 	}
 
+    public void Show(float score, float best)
+    {
+        Score.text = score.ToString().Replace(".", ",");
+        Best.text = best.ToString().Replace(".", ",");
+
+        GetComponent<Canvas>().enabled = true;
+        afterEnable();
+    }
+
     public void afterEnable() {
         EventSystem.current.SetSelectedGameObject(Reset.gameObject);
     }
+
     public void CallReset()
     {
-        
+        Debug.Log("call-reset");
         gameloop.GetComponent<GameFieldScript>().RestartGame();
         gameObject.GetComponent<Canvas>().enabled = false;
     }
