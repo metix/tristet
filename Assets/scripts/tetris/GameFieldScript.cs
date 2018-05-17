@@ -34,6 +34,8 @@ public class GameFieldScript : MonoBehaviour {
     public int deathCounter;
     public GameObject blockPrefab;
     public float speed = 1;
+
+    public float speedIncreaseFactor = -0.4f;
     public int width = 10;
     public float spacing = 1.05f;
     public float rotationUpdateSpeed = 1.05f;
@@ -63,6 +65,10 @@ public class GameFieldScript : MonoBehaviour {
     private Plane[] frustumPlanes;
 
     private GameObject allObjectsParent;
+    private GameObject tetrominosParent;
+    private GameObject wallsParent;
+    private GameObject numbersParent;
+    private GameObject levelBlocksParent;
 
     private bool gameStop = true;
 
@@ -92,6 +98,24 @@ public class GameFieldScript : MonoBehaviour {
         player = Instantiate(playerPrefab, new Vector3(1, 0, 0), Quaternion.Euler(0, 180, 0));
 
         allObjectsParent = new GameObject();
+        allObjectsParent.name = "game";
+
+        tetrominosParent = new GameObject();
+        tetrominosParent.transform.SetParent(allObjectsParent.transform);
+        tetrominosParent.name = "tetrominos";
+
+        wallsParent = new GameObject();
+        wallsParent.transform.SetParent(allObjectsParent.transform);
+        wallsParent.name = "walls";
+
+        numbersParent = new GameObject();
+        numbersParent.transform.SetParent(allObjectsParent.transform);
+        numbersParent.name = "numbers";
+
+        levelBlocksParent = new GameObject();
+        levelBlocksParent.transform.SetParent(allObjectsParent.transform);
+        levelBlocksParent.name = "level-separators";
+
         field = new List<List<Block>>();
         wallHeight = 0;
         score = -5;
@@ -597,7 +621,7 @@ public class GameFieldScript : MonoBehaviour {
 
         tetrimino.Blocks = new Block[array.GetLength(0), array.GetLength(0)];
         GameObject newTetrimino = new GameObject();
-        newTetrimino.transform.SetParent(allObjectsParent.transform);
+        newTetrimino.transform.SetParent(tetrominosParent.transform);
         newTetrimino.name = "tetrimino_" + type.Name;
 
         for (var y = 0; y < array.GetLength(0); y++)
@@ -671,18 +695,23 @@ public class GameFieldScript : MonoBehaviour {
             {
                 if (row % staticNumberWallOffset == 0)
                 {
+                    var newSeparetor = new GameObject();
+                    newSeparetor.name = "separator_" + row;
+
                     for (var a = -1; a < width + 20; a++)
                     {
                         var spawnPos = new Vector3((a * spacing) -10, (row - 1) * spacing, 1);
                         var wallBlock = Instantiate(blockPrefab, spawnPos, Quaternion.identity);
                         wallBlock.transform.localScale = new Vector3(1, 0.1f, 0.1f);
-                        wallBlock.transform.SetParent(allObjectsParent.transform);
+                        wallBlock.transform.SetParent(newSeparetor.transform);
                         wallBlock.GetComponent<Renderer>().material = matWall;
                         wallBlock.GetComponent<BlockScript>().UpdatePosition(spawnPos, 3f);
                     }
 
+                    newSeparetor.transform.SetParent(levelBlocksParent.transform);
+
                     var number = DigitType.InstantiateNumber(row, new Vector3(-4, row - 0.5f, 0), blockPrefab);
-                    number.transform.SetParent(allObjectsParent.transform);
+                    number.transform.SetParent(numbersParent.transform);
                     number.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
                     number.transform.localRotation = Quaternion.Euler(new Vector3(0, -10f, 0));
 
@@ -703,14 +732,14 @@ public class GameFieldScript : MonoBehaviour {
                 var spawnPos = new Vector3(-1, (topRow - i + 5) * spacing, 0);
                 var destPos = new Vector3(-1, (topRow - i - 2) * spacing, 0);
                 var wallBlock = Instantiate(blockPrefab, spawnPos, Quaternion.identity);
-                wallBlock.transform.SetParent(allObjectsParent.transform);
+                wallBlock.transform.SetParent(wallsParent.transform);
                 wallBlock.GetComponent<Renderer>().material = matWall;
                 wallBlock.GetComponent<BlockScript>().UpdatePosition(destPos, 3f);
 
                 spawnPos = new Vector3((width + 1), (topRow - i + 5) * spacing, 0);
                 destPos = new Vector3((width + 1), (topRow - i - 2) * spacing, 0);
                 wallBlock = Instantiate(blockPrefab, spawnPos, Quaternion.identity);
-                wallBlock.transform.SetParent(allObjectsParent.transform);
+                wallBlock.transform.SetParent(wallsParent.transform);
                 wallBlock.GetComponent<Renderer>().material = matWall;
                 wallBlock.GetComponent<BlockScript>().UpdatePosition(destPos, 3f);
 
@@ -729,7 +758,7 @@ public class GameFieldScript : MonoBehaviour {
         {
             score = newScore;
             if (score > 0)
-                speed = Mathf.Pow(score, -0.4f);
+                speed = Mathf.Pow(score, speedIncreaseFactor);
         }
 
         InsertStaticNumberWalls();
