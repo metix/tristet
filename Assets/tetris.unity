@@ -359,10 +359,12 @@ MonoBehaviour:
   rotationUpdateSpeed: 1.05
   moveUpdateSpeed: 1.05
   matWall: {fileID: 2100000, guid: c6654479eb374184e97114fceb88c810, type: 2}
+  matStaticWall: {fileID: 2100000, guid: 10e0ca021da47064a9b8d9fed6a78a51, type: 2}
   statusHeight: {fileID: 1398955050}
   player: {fileID: 1280587047}
   playerPrefab: {fileID: 1168629065777268, guid: fb3c340f22870b74a9b776aeab041740,
     type: 2}
+  staticNumberWallOffset: 10
   wallHeightOffset: 7
 --- !u!4 &809837024
 Transform:

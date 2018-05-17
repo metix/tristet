@@ -4,14 +4,6 @@ using UnityEngine;
 
 public class TetriminoType {
 
-    public static Material mGreen = Resources.Load("materials/mat_green", typeof(Material)) as Material;
-    public static Material mBlue = Resources.Load("materials/mat_blue", typeof(Material)) as Material;
-    public static Material mRed = Resources.Load("materials/mat_red", typeof(Material)) as Material;
-    public static Material mPurple = Resources.Load("materials/mat_purble", typeof(Material)) as Material;
-    public static Material mOrange = Resources.Load("materials/mat_orange", typeof(Material)) as Material;
-    public static Material mGray = Resources.Load("materials/mat_gray", typeof(Material)) as Material;
-    public static Material mWhite = Resources.Load("materials/mat_white", typeof(Material)) as Material;
-
     public int[,] Array { get; set; }
     public Material Material { get; set; }
     public string Name { get; set; }
@@ -26,7 +18,7 @@ public class TetriminoType {
             { 1, 1, 1, 1 },
             { 0, 0, 0, 0 }
         },
-            Material = mGreen,
+            Material = Materials.Green,
             Name = "I"
         };
     }
@@ -40,7 +32,7 @@ public class TetriminoType {
             { 1, 1, 1 },
             { 0, 0, 1 },
         },
-            Material = mBlue,
+            Material = Materials.Blue,
             Name = "J"
         };
     }
@@ -54,7 +46,7 @@ public class TetriminoType {
             { 1, 1, 1 },
             { 1, 0, 0 },
         },
-            Material = mRed,
+            Material = Materials.Red,
             Name = "L"
         };
     }
@@ -69,7 +61,7 @@ public class TetriminoType {
             { 0, 1, 1, 0 },
             { 0, 0, 0, 0 }
         },
-            Material = mPurple,
+            Material = Materials.Purple,
             Name = "O"
         };
     }
@@ -83,7 +75,7 @@ public class TetriminoType {
             { 0, 1, 0 },
             { 1, 1, 0 },
         },
-        Material = mOrange,
+        Material = Materials.Orange,
         Name = "S"
     };
     }
@@ -97,7 +89,7 @@ public class TetriminoType {
             { 0, 1, 0 },
             { 1, 1, 1 },
         },
-            Material = mGray,
+            Material = Materials.Gray,
             Name = "T"
         };
     }
@@ -111,14 +103,14 @@ public class TetriminoType {
             { 0, 1, 0 },
             { 0, 1, 1 },
         },
-            Material = mWhite,
+            Material = Materials.White,
             Name = "Z"
         };
     }
 
     public static TetriminoType Random()
     {
-        int r = UnityEngine.Random.Range(1, 8);
+        int r =     UnityEngine.Random.Range(1, 8);
 
         switch (r)
         {
