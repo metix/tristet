@@ -210,12 +210,16 @@ public class DigitType {
                     var targetPosition = new Vector3((pos.x + x + (i * (3 + spacingDigits))) * spacingBlocks, (pos.y + digitType.Array.GetLength(0) - y) * spacingBlocks, pos.z);
 
                     var digit = Object.Instantiate(prefab, targetPosition, Quaternion.identity);
-                    digit.GetComponent<Renderer>().material = Materials.Gray;
+                    digit.GetComponent<Renderer>().material = Materials.Green;
 
                     digit.transform.SetParent(newNumber.transform);
+
                 }
             }
         }
+
+        newNumber.transform.position = new Vector3(pos.x, pos.y, pos.z);
+
         return newNumber;
     }
 }

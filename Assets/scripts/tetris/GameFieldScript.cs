@@ -70,7 +70,7 @@ public class GameFieldScript : MonoBehaviour {
     {
         GameOver();
         InitGame();
-        Invoke("StartGame", 3);
+        Invoke("StartGame", 1);
     }
 
     void InitGame()
@@ -568,16 +568,20 @@ public class GameFieldScript : MonoBehaviour {
             {
                 if (row % staticNumberWallOffset == 0)
                 {
-                    for (var a = -1; a < width + 2; a++)
+                    for (var a = -1; a < width + 20; a++)
                     {
-                        var spawnPos = new Vector3(a, (row - 1) * spacing, 1);
-                        var destPos = new Vector3(a, (row  - 1) * spacing, 1);
+                        var spawnPos = new Vector3((a * spacing) -10, (row - 1) * spacing, 1);
                         var wallBlock = Instantiate(blockPrefab, spawnPos, Quaternion.identity);
-                        wallBlock.transform.localScale += new Vector3(1, 0.05f, 1);
+                        wallBlock.transform.localScale = new Vector3(1, 0.1f, 0.1f);
                         wallBlock.transform.SetParent(allObjectsParent.transform);
-                        wallBlock.GetComponent<Renderer>().material = Materials.White;
-                        wallBlock.GetComponent<BlockScript>().UpdatePosition(destPos, 3f);
+                        wallBlock.GetComponent<Renderer>().material = matWall;
+                        wallBlock.GetComponent<BlockScript>().UpdatePosition(spawnPos, 3f);
                     }
+
+                    var number = DigitType.InstantiateNumber(row, new Vector3(-4, row - 0.5f, 0), blockPrefab);
+                    number.transform.SetParent(allObjectsParent.transform);
+                    number.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+                    number.transform.localRotation = Quaternion.Euler(new Vector3(0, -10f, 0));
 
                     lastInsertedStaticNumberWallHeight = topRow;
                 }
@@ -618,6 +622,7 @@ public class GameFieldScript : MonoBehaviour {
             return;
 
         InsertStaticNumberWalls();
+        InsertWalls();
 
         if (Input.GetKeyDown(KeyCode.D))
         {
