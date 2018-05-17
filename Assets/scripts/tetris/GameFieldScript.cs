@@ -60,20 +60,55 @@ public class GameFieldScript : MonoBehaviour {
 
     private GameObject allObjectsParent;
 
-    private bool gameOver;
+    private bool gameStop = true;
 
-    void Start () {
-        Init();
+    void Start() {
+        RestartGame();  
     }
 
-    void Init()
+    public void RestartGame()
     {
+        GameOver();
+        InitGame();
+        Invoke("StartGame", 3);
+    }
+
+    void InitGame()
+    {
+        if (allObjectsParent != null)
+        {
+            Destroy(allObjectsParent);
+        }
+
+        if (player != null)
+        {
+            Destroy(player);  
+        }
+
+        player = Instantiate(playerPrefab, new Vector3(1, 0, 0), Quaternion.Euler(0, 180, 0));
+
         allObjectsParent = new GameObject();
         field = new List<List<Block>>();
         wallHeight = 0;
         lastInsertedStaticNumberWallHeight = -1;
+        InsertWalls();
+        InsertStaticNumberWalls();
         currentTetrimino = InstantiateTetrimino(new Vector2Int(0, 5), TetriminoType.I(), 0, false);
         UpdateCamera(new Vector3(5f, FindTopRow(false) * spacing + 2, -10));
+    }
+
+    public void StartGame()
+    {
+        gameStop = false;
+
+        if (!GetComponent<AudioSource>().isPlaying)
+            GetComponent<AudioSource>().Play();
+    }
+
+    public void GameOver()
+    {
+        deathCounter++;
+        gameStop = true;
     }
 
     private void PrintField()
@@ -538,6 +573,7 @@ public class GameFieldScript : MonoBehaviour {
                         var spawnPos = new Vector3(a, (row - 1) * spacing, 1);
                         var destPos = new Vector3(a, (row  - 1) * spacing, 1);
                         var wallBlock = Instantiate(blockPrefab, spawnPos, Quaternion.identity);
+                        wallBlock.transform.localScale += new Vector3(1, 0.05f, 1);
                         wallBlock.transform.SetParent(allObjectsParent.transform);
                         wallBlock.GetComponent<Renderer>().material = Materials.White;
                         wallBlock.GetComponent<BlockScript>().UpdatePosition(destPos, 3f);
@@ -549,19 +585,14 @@ public class GameFieldScript : MonoBehaviour {
         }
     }
 
-    public void Update()
+    void InsertWalls()
     {
-        if (gameOver)
-            return;
-
         int topRow = FindTopRow(false) + wallHeightOffset;
 
-        statusHeight.GetComponent<Text>().text = "Höhe: " + (topRow - wallHeightOffset);
-
         if (wallHeight < topRow)
-        {   
-           for (var i = 0; i < topRow - wallHeight; i++)
-           {
+        {
+            for (var i = 0; i < topRow - wallHeight; i++)
+            {
                 var spawnPos = new Vector3(-1, (topRow - i + 5) * spacing, 0);
                 var destPos = new Vector3(-1, (topRow - i - 2) * spacing, 0);
                 var wallBlock = Instantiate(blockPrefab, spawnPos, Quaternion.identity);
@@ -579,6 +610,12 @@ public class GameFieldScript : MonoBehaviour {
             }
             wallHeight = topRow;
         }
+    }
+
+    public void Update()
+    {
+        if (gameStop)
+            return;
 
         InsertStaticNumberWalls();
 
@@ -634,14 +671,7 @@ public class GameFieldScript : MonoBehaviour {
         frustumPlanes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
         if (!GeometryUtility.TestPlanesAABB(frustumPlanes, player.GetComponent<Collider>().bounds))
         {
-            deathCounter++;
-            Debug.Log("restart game");
-            gameOver = true;
-            Destroy(allObjectsParent);
-            Destroy(player);
-            player = Instantiate(playerPrefab, new Vector3(1, 0, 0), Quaternion.Euler(0, 180, 0));
-            Init();
-            gameOver = false;
+            RestartGame();
         }
 
         period += Time.deltaTime;
