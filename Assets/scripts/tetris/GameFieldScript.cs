@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Invector.CharacterController;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -20,13 +21,13 @@ public class GameFieldScript : MonoBehaviour {
             Rotation = rotation;
             Position = position;
             Type = type;
-            isStatic = staticTetrimino;
+            IsStatic = staticTetrimino;
         }
 
         public int Rotation { get; set; }
         public Vector2Int Position { get; internal set; }
         public TetriminoType Type { get; set; }
-        public bool isStatic { get; set; }
+        public bool IsStatic { get; set; }
 
         public Block[,] Blocks { get; set; }
     }
@@ -73,7 +74,7 @@ public class GameFieldScript : MonoBehaviour {
     private bool gameStop = true;
 
     void Start() {
-        RestartGame();  
+        InitGame();  
     }
 
     public void RestartGame()
@@ -285,7 +286,7 @@ public class GameFieldScript : MonoBehaviour {
 
         for (var i = 0; i < field[row].Count; i++)
         {
-            if (!withStatic && field[row][i] != null && field[row][i].Parent.isStatic)
+            if (!withStatic && field[row][i] != null && field[row][i].Parent.IsStatic)
                 continue;
             if (field[row][i] != null)
                 return true;
