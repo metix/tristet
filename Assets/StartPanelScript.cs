@@ -20,7 +20,6 @@ public class StartPanelScript : MonoBehaviour {
 
     public void close()
     {
-        vThirdPersonController.inputAllowed = true;
         GetComponent<Canvas>().enabled = false;
         global.GetComponent<GameFieldScript>().StartGame();
     }

@@ -97,6 +97,7 @@ public class GameFieldScript : MonoBehaviour {
         }
 
         player = Instantiate(playerPrefab, new Vector3(1, 0, 0), Quaternion.Euler(0, 180, 0));
+        vThirdPersonController.inputAllowed = false;
 
         allObjectsParent = new GameObject();
         allObjectsParent.name = "game";
@@ -140,6 +141,7 @@ public class GameFieldScript : MonoBehaviour {
 
     public void StartGame()
     {
+        vThirdPersonController.inputAllowed = true;
         gameStop = false;
 
         if (!GetComponent<AudioSource>().isPlaying)
@@ -155,10 +157,11 @@ public class GameFieldScript : MonoBehaviour {
     {
         deathCounter++;
         gameStop = true;
+        vThirdPersonController.inputAllowed = false;
 
         iTween.ValueTo(gameObject, iTween.Hash(
           "from", GetComponent<AudioLowPassFilter>().cutoffFrequency,
-          "to", 250,
+          "to", 500,
           "time", 1f,
           "onupdatetarget", gameObject,
           "onupdate", "tweenOnUpdateCallBack",
