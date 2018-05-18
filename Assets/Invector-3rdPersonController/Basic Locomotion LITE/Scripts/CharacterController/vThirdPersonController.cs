@@ -5,6 +5,7 @@ namespace Invector.CharacterController
 {
     public class vThirdPersonController : vThirdPersonAnimator
     {
+        public static bool inputAllowed = false;
         protected virtual void Start()
         {
 #if !UNITY_EDITOR

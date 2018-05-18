@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Invector.CharacterController;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -19,6 +20,7 @@ public class StartPanelScript : MonoBehaviour {
 
     public void close()
     {
+        vThirdPersonController.inputAllowed = true;
         GetComponent<Canvas>().enabled = false;
         global.GetComponent<GameFieldScript>().StartGame();
     }

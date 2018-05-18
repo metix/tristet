@@ -90,9 +90,13 @@ namespace Invector.CharacterController
         #region Basic Locomotion Inputs      
 
         protected virtual void MoveCharacter()
-        {            
-            cc.input.x = Input.GetAxis(horizontalInput);
-           // cc.input.y = Input.GetAxis(verticallInput);
+        {
+            if (vThirdPersonController.inputAllowed)
+            {
+
+                cc.input.x = Input.GetAxis(horizontalInput);
+                // cc.input.y = Input.GetAxis(verticallInput);
+            }
         }
 
         protected virtual void StrafeInput()
@@ -111,8 +115,11 @@ namespace Invector.CharacterController
 
         protected virtual void JumpInput()
         {
-            if (Input.GetButtonDown("Jump"))
-                cc.Jump();
+            if (vThirdPersonController.inputAllowed)
+            {
+                if (Input.GetButtonDown("Jump"))
+                    cc.Jump();
+            }
         }
 
         protected virtual void ExitGameInput()
